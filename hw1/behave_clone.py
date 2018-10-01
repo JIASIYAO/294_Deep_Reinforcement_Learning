@@ -9,11 +9,18 @@ import tf_util
 import os
 import pdb
 
+# run trained model
+parser = argparse.ArgumentParser()
+parser.add_argument('envname', type=str)
+parser.add_argument('--render', action='store_true')
+parser.add_argument("--max_timesteps", type=int)
+parser.add_argument('--num_rollouts', type=int, default=20,
+                    help='Number of expert roll outs')
+args = parser.parse_args()
+
 
 # load the expert data
-#with open('expert_data/Ant-v2.pkl', 'rb') as f:
-#    data = pickle.load(f)
-with open('expert_data/Hopper-v2.pkl', 'rb') as f:
+with open('expert_data/'+args.envname+'.pkl', 'rb') as f:
     data = pickle.load(f)
 
 observations_exp = data['observations']
@@ -22,6 +29,7 @@ actions_exp = np.reshape(actions_exp_orig, (len(actions_exp_orig), actions_exp_o
 
 n_obs = observations_exp.shape[-1]
 n_act = actions_exp.shape[-1]
+#pdb.set_Trace()
 
 # build a keras model
 model = Sequential([
@@ -35,16 +43,7 @@ model = Sequential([
 model.compile(optimizer='rmsprop',
               loss='mse')
 
-# run trained model
-parser = argparse.ArgumentParser()
-parser.add_argument('envname', type=str)
-parser.add_argument('--render', action='store_true')
-parser.add_argument("--max_timesteps", type=int)
-parser.add_argument('--num_rollouts', type=int, default=20,
-                    help='Number of expert roll outs')
-args = parser.parse_args()
 
- 
 with tf.Session():
     tf_util.initialize()
 
@@ -87,20 +86,4 @@ with tf.Session():
     with open(os.path.join('train_data', args.envname + '.pkl'), 'wb') as f:
         pickle.dump(train_data, f, pickle.HIGHEST_PROTOCOL)
 
-#### tune the hyper param of epochs
-#import matplotlib.pyplot as plt
-#epochs = [5,10,20,30]
-#real = 4812
-#real_std = 75
-#epochs = [4, 8, 12, 16, 20]
-#means = [3407, 3769, 4453, 3748, 4303]
-#stds = [1020, 909, 538, 183, 102]
-#plt.clf()
-#plt.fill_between([0,24],[real-real_std, real-real_std], [real+real_std, real+real_std], color='r', alpha=0.2)
-#plt.plot([0,24],[real,real],ls='-',lw=2,color='r',label='expert')
-#plt.errorbar(epochs, means, yerr=stds, fmt='o', capsize=2,label='behavior cloning')
-#plt.legend()
-#plt.xlabel('epoch')
-#plt.ylabel('position')
-#plt.savefig('bc.png',format='png')
-#plt.show()
+

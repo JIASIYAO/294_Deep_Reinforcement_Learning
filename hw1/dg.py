@@ -22,8 +22,23 @@ from keras.layers import Dense, Activation
 import pdb
 
 def main(iters=10):
+    # run trained model
+    parser = argparse.ArgumentParser()
+    parser.add_argument('expert_policy_file', type=str)
+    parser.add_argument('envname', type=str)
+    parser.add_argument('--render', action='store_true')
+    parser.add_argument("--max_timesteps", type=int)
+    parser.add_argument('--num_rollouts', type=int, default=20,
+                        help='Number of expert roll outs')
+    args = parser.parse_args()
+
+    print('loading and building expert policy')
+    policy_fn = load_policy.load_policy(args.expert_policy_file)
+    print('loaded and built')
+
+
     # load the expert data
-    with open('expert_data/Hopper-v2.pkl', 'rb') as f:
+    with open('expert_data/'+args.envname+'.pkl', 'rb') as f:
         data = pickle.load(f)
     
     observations_exp = data['observations']
@@ -44,21 +59,6 @@ def main(iters=10):
     # For a mean squared error regression problem
     model.compile(optimizer='rmsprop',
                   loss='mse')
-    
-    # run trained model
-    parser = argparse.ArgumentParser()
-    parser.add_argument('expert_policy_file', type=str)
-    parser.add_argument('envname', type=str)
-    parser.add_argument('--render', action='store_true')
-    parser.add_argument("--max_timesteps", type=int)
-    parser.add_argument('--num_rollouts', type=int, default=20,
-                        help='Number of expert roll outs')
-    args = parser.parse_args()
-
-    print('loading and building expert policy')
-    policy_fn = load_policy.load_policy(args.expert_policy_file)
-    print('loaded and built')
-
 
     import gym
     means = []
@@ -69,7 +69,6 @@ def main(iters=10):
         max_steps = args.max_timesteps or env.spec.timestep_limit
         
         for it in range(iters):
-
             # Fit the data
             model.fit(observations_exp, actions_exp, epochs=16, batch_size=32, validation_split=0.25)
 
@@ -103,8 +102,7 @@ def main(iters=10):
             means.append(np.mean(returns))
             stds.append(np.std(returns))
 
-            # add new observations and corresponding expert actions to the original data #observations_exp = list(data['observations'])
-            #actions_exp = list(data['actions'])
+            # add new observations and corresponding expert actions to the original data
             exp_actions = []
             for obs in new_observations:
                 #observations_exp.append(obs)

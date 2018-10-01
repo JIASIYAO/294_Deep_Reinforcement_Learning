@@ -25,3 +25,21 @@ In `experts/`, the provided expert policies are:
 * Walker2d-v2.pkl
 
 The name of the pickle file corresponds to the name of the gym environment.
+
+####### Example Usage ########
+* To generate expert data:
+    python run_expert.py experts/Ant-v2.pkl Ant-v2 --render --num_rollouts 20
+
+* Section 2.2, to generate Behavior Cloning data:
+    python behave_clone.py  Ant-v2 --render --num_rollouts 20
+
+* Section 2.3, to make the plot of performance VS number of trainning epochs, run the above command with different number of epochs and record it in the plot.py. Run plot.py to make figure.
+
+* Section 3.2, to generate DAgger data:
+    python dg.py experts/Ant-v2.pkl Ant-v2 --render --num_rollouts 2
+
+    To make the plot of performance VS number of terations, run the above command and record it in the plot.py. Run plot.py to make figure.
+
+
+
+
